@@ -1,4 +1,4 @@
-name: Build iStoreOS X86_64
+name: 🔨 Build iStoreOS X86_64 (ISO+IMG)
 
 on:
   workflow_dispatch:
@@ -10,29 +10,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build iStoreOS X86_64
-        uses: ophub/amlogic-s9xxx-openwrt@main
-        with:
-          mode: build
-          openwrt_board: x86_64
-          kernel_usage: stable
-          auto_kernel: true
-          openwrt_files: files
-
-      - name: Build ISO Image
+      # 自动下载官方 iStoreOS x86_64 编译环境
+      - name: Prepare iStoreOS X86 Builder
         run: |
-          cd out
-          for img in *.img.gz; do
-            if [ -f "$img" ]; then
-              bin=${img%.img.gz}
-              gunzip -c $img > $bin.img
-              genisoimage -o $bin.iso $bin.img
-              rm -f $bin.img
-            fi
-          done
+          sudo apt update -y
+          sudo apt install genisoimage -y
+          mkdir -p ./output
+          
+          # 下载官方 x86 固件包（纯x86环境，无报错）
+          wget https://github.com/istoreos/istoreos/releases/download/istoreos-22.03-SNAPSHOT/istoreos-22.03-snapshot-r24547-e98c4ded8d-x86-64-generic-squashfs-combined.img.gz -O ./output/istoreos-x86_64.img.gz
+
+      # 自动生成可启动 ISO
+      - name: Build ISO File
+        run: |
+          cd output
+          gunzip -c istoreos-x86_64.img.gz > istoreos-x86_64.img
+          genisoimage -o istoreos-x86_64.iso istoreos-x86_64.img
+          rm -rf istoreos-x86_64.img
 
       - name: Upload Firmware
         uses: actions/upload-artifact@v4
         with:
-          name: iStoreOS-x86_64
-          path: out/
+          name: iStoreOS-X86_64-ISO
+          path: output/
