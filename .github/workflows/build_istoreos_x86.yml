@@ -5,24 +5,34 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Build iStoreOS x86_64
+      - name: Build x86_64 Firmware
         uses: ophub/amlogic-s9xxx-openwrt@main
         with:
-          target: x86_64
-          openwrt_board: generic
+          mode: "build"
+          openwrt_board: "x86_64"
+          kernel_usage: "stable"
           auto_kernel: true
-          build_iso: true
-          file_system: squashfs
+          openwrt_files: "files"
+
+      - name: Generate ISO
+        run: |
+          cd out
+          for f in *.img.gz; do
+            if [ -f "$f" ]; then
+              iso_name="${f%.img.gz}.iso"
+              echo "Converting $f to $iso_name"
+              gunzip -c "$f" | dd of="${f%.img.gz}.img" bs=4M
+              genisoimage -o "$iso_name" "${f%.img.gz}.img"
+              rm -f "${f%.img.gz}.img"
+            fi
+          done
 
       - name: Upload Firmware
         uses: actions/upload-artifact@v4
         with:
           name: iStoreOS-x86_64
-          path: |
-            out/*.img.gz
-            out/*.iso
+          path: out/
