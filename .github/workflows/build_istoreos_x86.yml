@@ -1,4 +1,4 @@
-name: Build iStoreOS x86_64
+name: Build iStoreOS X86_64
 
 on:
   workflow_dispatch:
@@ -7,27 +7,27 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Build x86_64 Firmware
+      - name: Build iStoreOS X86_64
         uses: ophub/amlogic-s9xxx-openwrt@main
         with:
-          mode: "build"
-          openwrt_board: "x86_64"
-          kernel_usage: "stable"
+          mode: build
+          openwrt_board: x86_64
+          kernel_usage: stable
           auto_kernel: true
-          openwrt_files: "files"
+          openwrt_files: files
 
-      - name: Generate ISO
+      - name: Build ISO Image
         run: |
           cd out
-          for f in *.img.gz; do
-            if [ -f "$f" ]; then
-              iso_name="${f%.img.gz}.iso"
-              echo "Converting $f to $iso_name"
-              gunzip -c "$f" | dd of="${f%.img.gz}.img" bs=4M
-              genisoimage -o "$iso_name" "${f%.img.gz}.img"
-              rm -f "${f%.img.gz}.img"
+          for img in *.img.gz; do
+            if [ -f "$img" ]; then
+              bin=${img%.img.gz}
+              gunzip -c $img > $bin.img
+              genisoimage -o $bin.iso $bin.img
+              rm -f $bin.img
             fi
           done
 
