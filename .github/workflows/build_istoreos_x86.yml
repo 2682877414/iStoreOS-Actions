@@ -1,4 +1,4 @@
-name: 🔨 Build iStoreOS X86_64 (ISO+IMG)
+name: Build iStoreOS x86_64 (IMG+ISO)
 
 on:
   workflow_dispatch:
@@ -7,29 +7,26 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      # 自动下载官方 iStoreOS x86_64 编译环境
-      - name: Prepare iStoreOS X86 Builder
+      - name: Install tools
+        run: sudo apt update && sudo apt install -y genisoimage
+
+      - name: Download latest iStoreOS x86_64
         run: |
-          sudo apt update -y
-          sudo apt install genisoimage -y
-          mkdir -p ./output
-          
-          # 下载官方 x86 固件包（纯x86环境，无报错）
-          wget https://github.com/istoreos/istoreos/releases/download/istoreos-22.03-SNAPSHOT/istoreos-22.03-snapshot-r24547-e98c4ded8d-x86-64-generic-squashfs-combined.img.gz -O ./output/istoreos-x86_64.img.gz
+          mkdir -p out
+          cd out
+          wget -O istoreos-x86.img.gz https://dl.openwrt.ai/latest/istoreos/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz
 
-      # 自动生成可启动 ISO
-      - name: Build ISO File
+      - name: Convert to ISO
         run: |
-          cd output
-          gunzip -c istoreos-x86_64.img.gz > istoreos-x86_64.img
-          genisoimage -o istoreos-x86_64.iso istoreos-x86_64.img
-          rm -rf istoreos-x86_64.img
+          cd out
+          gunzip -f istoreos-x86.img.gz
+          genisoimage -o istoreos-x86.iso istoreos-x86.img
+          rm -f istoreos-x86.img
 
-      - name: Upload Firmware
+      - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
-          name: iStoreOS-X86_64-ISO
-          path: output/
+          name: iStoreOS-x86_64
+          path: out/
