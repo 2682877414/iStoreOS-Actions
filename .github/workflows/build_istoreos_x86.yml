@@ -1,0 +1,28 @@
+name: Build iStoreOS x86_64
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build iStoreOS x86_64
+        uses: ophub/amlogic-s9xxx-openwrt@main
+        with:
+          target: x86_64
+          openwrt_board: generic
+          auto_kernel: true
+          build_iso: true
+          file_system: squashfs
+
+      - name: Upload Firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: iStoreOS-x86_64
+          path: |
+            out/*.img.gz
+            out/*.iso
