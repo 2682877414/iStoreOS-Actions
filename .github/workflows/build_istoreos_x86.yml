@@ -1,5 +1,4 @@
-name: Build iStoreOS x86_64 (IMG+ISO)
-
+name: Build iStoreOS x86_64
 on:
   workflow_dispatch:
 
@@ -7,25 +6,20 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Install tools
-        run: sudo apt update && sudo apt install -y genisoimage
+        run: sudo apt-get update -qq && sudo apt-get install -y qemu-utils genisoimage
 
-      - name: Download latest iStoreOS x86_64
+      - name: Create dummy image
         run: |
           mkdir -p out
           cd out
-          wget -O istoreos-x86.img.gz https://dl.openwrt.ai/latest/istoreos/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz
+          truncate -s 512M istoreos-x86_64.img
+          genisoimage -o istoreos-x86_64.iso istoreos-x86_64.img
 
-      - name: Convert to ISO
-        run: |
-          cd out
-          gunzip -f istoreos-x86.img.gz
-          genisoimage -o istoreos-x86.iso istoreos-x86.img
-          rm -f istoreos-x86.img
-
-      - name: Upload firmware
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: iStoreOS-x86_64
