@@ -17,28 +17,21 @@ jobs:
           sudo apt update -qq
           sudo apt install -y genisoimage gzip wget
 
-      - name: 拉取iStoreOS官方x86纯净镜像
+      - name: 下载最新 iStoreOS x86_64 EFI 固件
         run: |
           mkdir -p x86_out
           cd x86_out
-          # 可用国内加速镜像，防404/域名解析失败
-          wget --no-check-certificate -O os.img.gz https://fw.koolcenter.com/iStoreOS/22.03/snapshot/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz
+          wget -O iStoreOS-x86_64.img.gz https://fw.koolcenter.com/iStoreOS/x86_64_efi/istoreos-24.10.4-2025120511-x86-64-efi-squashfs-combined.img.gz
 
-      - name: IMG 转 ISO
+      - name: 解压并转换成 ISO
         run: |
           cd x86_out
-          # 解压
-          gunzip os.img.gz
-          # 制作可启动iso
-          genisoimage -o iStoreOS-x86_64.iso os.img
-          # 重新压缩保留原img.gz
-          gzip os.img
+          gunzip iStoreOS-x86_64.img.gz
+          genisoimage -o iStoreOS-x86_64.iso iStoreOS-x86_64.img
+          gzip iStoreOS-x86_64.img
 
-      - name: 上传固件文件
-        uses: softprops/action-gh-release@v2.2.1
+      - name: 上传固件
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: iStoreOS-X86-${{ env.VERSION }}
-          files: |
-            x86_out/*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          name: iStoreOS-X86-${{ env.VERSION }}
+          path: x86_out/
