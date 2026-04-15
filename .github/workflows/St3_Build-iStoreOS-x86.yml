@@ -21,7 +21,7 @@ jobs:
         run: |
           mkdir -p x86_out
           cd x86_out
-          wget -O iStoreOS-x86_64.img.gz https://fw.koolcenter.com/iStoreOS/x86_64_efi/istoreos-24.10.4-2025120511-x86-64-efi-squashfs-combined.img.gz
+          wget -O iStoreOS-x86_64.img.gz https://fw20.koolcenter.com/iStoreOS/x86_64_efi/istoreos-24.10.5-2026041010-x86-64-squashfs-combined-efi.img.gz
 
       - name: 解压并转换成 ISO
         run: |
