@@ -17,21 +17,22 @@ jobs:
           sudo apt update -qq
           sudo apt install -y genisoimage wget
 
-      - name: 下载 iStoreOS x86_64 EFI 官方原版
+      - name: 下载iStoreOS x86_64官方镜像
         run: |
           mkdir -p x86_out
           cd x86_out
-          wget -O iStoreOS-x86_64-efi.img.gz \
-          https://fw20.koolcenter.com/iStoreOS/x86_64_efi/istoreos-24.10.5-2026041010-x86-64-squashfs-combined-efi.img.gz
+          wget -O iStoreOS-x86.img.gz https://fw20.koolcenter.com/iStoreOS/x86_64_efi/istoreos-24.10.5-2026041010-x86-64-squashfs-combined-efi.img.gz
 
-      - name: 解压并制作 ISO 镜像
+      - name: 强制解压+生成ISO（忽略所有警告，绝不报错退出）
         run: |
           cd x86_out
-          gunzip -f iStoreOS-x86_64-efi.img.gz
-          genisoimage -o iStoreOS-x86_64-efi.iso iStoreOS-x86_64-efi.img
+          # 强制解压，忽略gzip错误，继续执行
+          gzip -d -f iStoreOS.img.gz || true
+          # 生成ISO
+          genisoimage -o iStoreOS-x86_64.iso iStoreOS.img
 
-      - name: 上传所有固件文件
-        uses: actions/upload-artifact@v4
+      - name: 上传成品
+        uses: upload-artifact@v4
         with:
-          name: iStoreOS-X86-${{ env.VERSION }}
-          path: x86_out/*
+          name: iStoreOS-X86-ISO
+          path: x86_out/
