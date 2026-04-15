@@ -12,26 +12,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: 安装镜像转换依赖
+      - name: 安装工具
         run: |
           sudo apt update -qq
-          sudo apt install -y genisoimage gzip wget
+          sudo apt install -y genisoimage wget
 
-      - name: 下载最新 iStoreOS x86_64 EFI 固件
+      - name: 下载 iStoreOS x86_64 EFI 官方原版
         run: |
           mkdir -p x86_out
           cd x86_out
-          wget -O iStoreOS-x86_64.img.gz https://fw20.koolcenter.com/iStoreOS/x86_64_efi/istoreos-24.10.5-2026041010-x86-64-squashfs-combined-efi.img.gz
+          wget -O iStoreOS-x86_64-efi.img.gz \
+          https://fw20.koolcenter.com/iStoreOS/x86_64_efi/istoreos-24.10.5-2026041010-x86-64-squashfs-combined-efi.img.gz
 
-      - name: 解压并转换成 ISO
+      - name: 解压并制作 ISO 镜像
         run: |
           cd x86_out
-          gunzip iStoreOS-x86_64.img.gz
-          genisoimage -o iStoreOS-x86_64.iso iStoreOS-x86_64.img
-          gzip iStoreOS-x86_64.img
+          gunzip -f iStoreOS-x86_64-efi.img.gz
+          genisoimage -o iStoreOS-x86_64-efi.iso iStoreOS-x86_64-efi.img
 
-      - name: 上传固件
+      - name: 上传所有固件文件
         uses: actions/upload-artifact@v4
         with:
           name: iStoreOS-X86-${{ env.VERSION }}
-          path: x86_out/
+          path: x86_out/*
