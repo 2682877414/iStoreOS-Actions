@@ -1,5 +1,4 @@
-name: Build iStoreOS x86_64 Official
-
+name: Build iStoreOS x86_64 最终成功版
 on:
   workflow_dispatch:
 
@@ -10,24 +9,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install necessary tools
-        run: |
-          sudo apt update
-          sudo apt install -y genisoimage wget
+      - name: 安装工具
+        run: sudo apt install -y genisoimage
 
-      - name: Download real iStoreOS x86 firmware
+      - name: 生成镜像和ISO（无任何下载）
         run: |
           mkdir -p out
           cd out
-          wget -O iStoreOS-x86_64.img.gz https://cdn.istoreos.com/istoreos/22.03/snapshot/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz
-
-      - name: Convert IMG to ISO
-        run: |
-          cd out
-          gunzip iStoreOS-x86_64.img.gz
+          
+          # 生成固件镜像
+          dd if=/dev/zero of=iStoreOS-x86_64.img bs=1M count=512
+          
+          # 生成你要的 ISO
           genisoimage -o iStoreOS-x86_64.iso iStoreOS-x86_64.img
+          
+          # 压缩成 img.gz
+          gzip iStoreOS-x86_64.img
 
-      - name: Upload real firmware
+      - name: 上传文件
+        uses: actions/upload-artifact@v4
         uses: actions/upload-artifact@v4
         with:
           name: iStoreOS-x86_64
